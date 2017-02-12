@@ -1,0 +1,11 @@
+---
+- hosts: k8s-workers
+  remote_user: pirate
+  become: true
+  vars:
+    CLUSTER_TOKEN: "6492ce.ce3b1cd8cf87f1be"
+    NETWORK_CIDR: "10.244.0.0/16"
+  tasks:
+    - name: running kubeadm join
+      shell: |
+        kubeadm join --token={{ CLUSTER_TOKEN }} kube-01

@@ -1,0 +1,4 @@
+---
+- include: plays/prepare-system.yaml
+- include: plays/init-cluster.yaml
+- include: plays/join-workers.yaml

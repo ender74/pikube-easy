@@ -1,0 +1,22 @@
+---
+- hosts: k8s-masters
+  remote_user: pirate
+  become: true
+  vars:
+    CLUSTER_TOKEN: "6492ce.ce3b1cd8cf87f1be"
+    NETWORK_CIDR: "10.244.0.0/16"
+  tasks:
+    - name: running kubeadm init
+      shell: |
+        kubeadm init --pod-network-cidr {{ NETWORK_CIDR }} --token {{ CLUSTER_TOKEN }}
+    - name: setting up flannel
+      shell: |
+        curl -sSL https://rawgit.com/coreos/flannel/master/Documentation/kube-flannel.yml | sed "s/amd64/arm/g" | kubectl create -f -
+    - name: setting up traefik load balancer
+      shell: |
+        kubectl apply -f https://raw.githubusercontent.com/hypriot/rpi-traefik/master/traefik-k8s-example.yaml
+        kubectl label node kube-01 nginx-controller=traefik
+    - name: setting up the dashboard
+      shell: |
+        curl -sSL https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml | sed "s/amd64/arm/g" | kubectl create -f -
+        kubectl -n kube-system get service kubernetes-dashboard -o template --template="{{ (index .spec.ports 0).nodePort }}" | xargs echo
